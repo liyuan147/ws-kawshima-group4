@@ -7,10 +7,10 @@ import java.time.LocalDateTime;
  * @author kawasima
  */
 public class HighwayDrive implements Serializable {
-    private LocalDateTime enteredAt;
-    private LocalDateTime exitedAt;
-    private VehicleFamily vehicleFamily;
-    private RouteType routeType;
+    private LocalDateTime enteredAt; // 入った時間
+    private LocalDateTime exitedAt; // 出た時間
+    private VehicleFamily vehicleFamily; // 車種
+    private RouteType routeType; // 都市/地方
 
     private Driver driver;
 
