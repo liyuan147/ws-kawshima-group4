@@ -5,51 +5,70 @@ import kata.ex01.model.RouteType;
 import kata.ex01.model.VehicleFamily;
 import kata.ex01.util.HolidayUtils;
 
-import java.time.LocalDateTime;
-
 /**
  * @author kawasima
  */
 public class DiscountServiceImpl implements DiscountService {
 
-    private boolean isWeekdayMorningOrEvening(HighwayDrive drive){
+    /**
+     * 平日の朝夕割引適用時間帯か判定します
+     * 平日 6時〜9時, 17時〜20時
+     * 開始・終了のどちらかが範囲内なら適用されます。
+     *
+     * @param drive 走行記録
+     * @return boolean 判定結果
+     */
+    private boolean isWeekdayMorningOrEvening(final HighwayDrive drive) {
+        final int enteredHour = drive.getEnteredAt().getHour();
+        final int exitedHour = drive.getExitedAt().getHour();
+
         // 休日またぎのケース対応
         // 休日→平日の場合
-        if(HolidayUtils.isHoliday(drive.getEnteredAt().toLocalDate())){
-            return !(drive.getExitedAt().getHour() < 6);
+        if (HolidayUtils.isHoliday(drive.getEnteredAt().toLocalDate())) {
+            return !(exitedHour < 6);
         }
         // 平日→休日の場合
-        if(HolidayUtils.isHoliday(drive.getExitedAt().toLocalDate())){
-            return !(drive.getEnteredAt().getHour() > 20);
+        if (HolidayUtils.isHoliday(drive.getExitedAt().toLocalDate())) {
+            return !(enteredHour > 20);
         }
 
         // 平日→平日の場合
-        if(drive.getEnteredAt().getHour() < drive.getExitedAt().getHour()){
-            return (drive.getEnteredAt().getHour() <= 9 && drive.getExitedAt().getHour() >= 6) ||
-                    (drive.getEnteredAt().getHour() <= 20 && drive.getExitedAt().getHour() >= 17);
+        if (enteredHour < exitedHour) {
+            return (enteredHour <= 9 && exitedHour >= 6) ||
+                    (enteredHour <= 20 && exitedHour >= 17);
         } else {
-            return (drive.getEnteredAt().getHour() >= 20 && drive.getExitedAt().getHour() >= 6) ||
-                    (drive.getEnteredAt().getHour() <= 17 && drive.getExitedAt().getHour() <= 6);
+            return (enteredHour >= 20 && exitedHour >= 6) ||
+                    (enteredHour <= 17 && exitedHour <= 6);
         }
     }
 
-    private boolean isMidnight(HighwayDrive drive){
+    /**
+     * 深夜割引適用時間帯か判定します
+     * 毎日0時〜4時
+     *
+     * @param drive 走行記録
+     * @return boolean 判定結果
+     */
+    private boolean isMidnight(final HighwayDrive drive) {
+        final int enteredHour = drive.getEnteredAt().getHour();
+        final int exitedHour = drive.getExitedAt().getHour();
+
         // 日付またぎ対応
-        if(drive.getEnteredAt().getHour() < drive.getExitedAt().getHour()){
-            return (drive.getEnteredAt().getHour() <= 4);
+        if (enteredHour < exitedHour) {
+            return (enteredHour <= 4);
         } else {
-            return (drive.getExitedAt().getHour() <= 4);
+            return (exitedHour <= 4);
         }
     }
 
     @Override
-    public long calc(HighwayDrive drive) {
+    public long calc(final HighwayDrive drive) {
         // 平日朝夕割引10回以上　地方
-        if(!HolidayUtils.isHoliday(drive.getEnteredAt().toLocalDate()) ||
-           !HolidayUtils.isHoliday(drive.getExitedAt().toLocalDate())){
-            if(isWeekdayMorningOrEvening(drive)){
-                if(drive.getRouteType().equals(RouteType.RURAL)){
-                    if(drive.getDriver().getCountPerMonth() >= 10){
+        if (!HolidayUtils.isHoliday(drive.getEnteredAt().toLocalDate()) ||
+                !HolidayUtils.isHoliday(drive.getExitedAt().toLocalDate())) {
+            if (isWeekdayMorningOrEvening(drive)) {
+                if (drive.getRouteType().equals(RouteType.RURAL)) {
+                    if (drive.getDriver().getCountPerMonth() >= 10) {
                         return 50;
                     }
                     if (drive.getDriver().getCountPerMonth() >= 5) {
@@ -72,8 +91,6 @@ public class DiscountServiceImpl implements DiscountService {
                 }
             }
         }
-
-
 
         return 0;
     }
