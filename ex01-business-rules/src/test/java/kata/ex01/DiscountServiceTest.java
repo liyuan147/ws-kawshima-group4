@@ -5,7 +5,6 @@ import kata.ex01.model.HighwayDrive;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.print.attribute.standard.MediaSize;
 import java.time.LocalDateTime;
 
 import static kata.ex01.model.RouteType.RURAL;
@@ -59,8 +58,8 @@ public class DiscountServiceTest {
     public void test平日朝夕割引0() {
         HighwayDrive drive = new HighwayDrive();
 
-        drive.setEnteredAt(LocalDateTime.of(2019, 10, 1, 23, 0));
-        drive.setExitedAt(LocalDateTime.of(2019, 10, 2, 6, 30));
+        drive.setEnteredAt(LocalDateTime.of(2019, 10, 1, 6, 0));
+        drive.setExitedAt(LocalDateTime.of(2019, 10, 1, 10, 0));
         drive.setDriver(driver(1));
         drive.setVehicleFamily(STANDARD); // 普通車
         drive.setRouteType(RURAL); // 地方
@@ -85,8 +84,8 @@ public class DiscountServiceTest {
     public void test休日割引その他地方(){
         HighwayDrive drive = new HighwayDrive();
 
-        drive.setEnteredAt(LocalDateTime.of(2019, 10, 13, 23, 0));
-        drive.setExitedAt(LocalDateTime.of(2019, 10, 14, 6, 30));
+        drive.setEnteredAt(LocalDateTime.of(2019, 10, 13, 22, 0));
+        drive.setExitedAt(LocalDateTime.of(2019, 10, 13, 23, 30));
         drive.setDriver(driver(1));
         drive.setVehicleFamily(OTHER); // その他
         drive.setRouteType(RURAL); // 地方
@@ -98,8 +97,8 @@ public class DiscountServiceTest {
     public void test休日割引都市(){
         HighwayDrive drive = new HighwayDrive();
 
-        drive.setEnteredAt(LocalDateTime.of(2019, 10, 13, 23, 0));
-        drive.setExitedAt(LocalDateTime.of(2019, 10, 14, 6, 30));
+        drive.setEnteredAt(LocalDateTime.of(2019, 10, 13, 22, 0));
+        drive.setExitedAt(LocalDateTime.of(2019, 10, 13, 23, 30));
         drive.setDriver(driver(1));
         drive.setVehicleFamily(MOTORCYCLE); // 二輪車
         drive.setRouteType(URBAN); // 都市

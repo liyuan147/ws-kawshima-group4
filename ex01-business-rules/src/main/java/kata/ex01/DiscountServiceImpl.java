@@ -1,85 +1,42 @@
 package kata.ex01;
 
-import kata.ex01.model.HighwayDrive;
-import kata.ex01.model.RouteType;
-import kata.ex01.model.VehicleFamily;
+import kata.ex01.model.*;
 import kata.ex01.util.HolidayUtils;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author kawasima
  */
 public class DiscountServiceImpl implements DiscountService {
 
-    /**
-     * 平日の朝夕割引適用時間帯か判定します
-     * 平日 6時〜9時, 17時〜20時
-     * 開始・終了のどちらかが範囲内なら適用されます。
-     *
-     * @param drive 走行記録
-     * @return boolean 判定結果
-     */
-    private boolean isWeekdayMorningOrEvening(final HighwayDrive drive) {
-        final int enteredHour = drive.getEnteredAt().getHour();
-        final int exitedHour = drive.getExitedAt().getHour();
-
-        // 休日またぎのケース対応
-        // 休日→平日の場合
-        if (HolidayUtils.isHoliday(drive.getEnteredAt().toLocalDate())) {
-            return !(exitedHour < 6);
-        }
-        // 平日→休日の場合
-        if (HolidayUtils.isHoliday(drive.getExitedAt().toLocalDate())) {
-            return !(enteredHour > 20);
-        }
-
-        // 平日→平日の場合
-        if (enteredHour < exitedHour) {
-            return (enteredHour <= 9 && exitedHour >= 6) ||
-                    (enteredHour <= 20 && exitedHour >= 17);
-        } else {
-            return (enteredHour >= 20 && exitedHour >= 6) ||
-                    (enteredHour <= 17 && exitedHour <= 6);
-        }
-    }
-
-    /**
-     * 深夜割引適用時間帯か判定します
-     * 毎日0時〜4時
-     *
-     * @param drive 走行記録
-     * @return boolean 判定結果
-     */
-    private boolean isMidnight(final HighwayDrive drive) {
-        final int enteredHour = drive.getEnteredAt().getHour();
-        final int exitedHour = drive.getExitedAt().getHour();
-
-        // 日付またぎ対応
-        if (enteredHour < exitedHour) {
-            return (enteredHour <= 4);
-        } else {
-            return (exitedHour <= 4);
-        }
-    }
-
     @Override
     public long calc(final HighwayDrive drive) {
+        List<LocalDate> drivingDates = new ArrayList<>();
+        drivingDates.add(drive.getEnteredAt().toLocalDate());
+        drivingDates.add(drive.getExitedAt().toLocalDate());
+
+        TimeRange morningTime = new TimeRange(drivingDates, LocalTime.of(6, 0), LocalTime.of(9, 0));
+        TimeRange eveningTime = new TimeRange(drivingDates, LocalTime.of(17, 0), LocalTime.of(20, 0));
+        TimeRange midnightTime = new TimeRange(drivingDates, LocalTime.of(0, 0), LocalTime.of(4, 0));
+
         // 平日朝夕割引10回以上　地方
-        if (!HolidayUtils.isHoliday(drive.getEnteredAt().toLocalDate()) ||
-                !HolidayUtils.isHoliday(drive.getExitedAt().toLocalDate())) {
-            if (isWeekdayMorningOrEvening(drive)) {
-                if (drive.getRouteType().equals(RouteType.RURAL)) {
-                    if (drive.getDriver().getCountPerMonth() >= 10) {
-                        return 50;
-                    }
-                    if (drive.getDriver().getCountPerMonth() >= 5) {
-                        return 30;
-                    }
+        if ((morningTime.matchAndIsWeekday(drive.getEnteredAt(), drive.getExitedAt()) || eveningTime.matchAndIsWeekday(drive.getEnteredAt(), drive.getExitedAt()))) {
+            if (drive.getRouteType().equals(RouteType.RURAL)) {
+                if (drive.getDriver().getCountPerMonth() >= 10) {
+                    return 50;
+                }
+                if (drive.getDriver().getCountPerMonth() >= 5) {
+                    return 30;
                 }
             }
         }
 
         // 深夜割引
-        if (isMidnight(drive)) {
+        if (midnightTime.match(drive.getEnteredAt(), drive.getExitedAt())) {
             return 30;
         }
 
