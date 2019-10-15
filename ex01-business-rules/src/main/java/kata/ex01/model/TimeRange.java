@@ -8,7 +8,7 @@ import java.time.LocalTime;
 import java.util.List;
 
 /**
- * ルールを表すモデル
+ * 時間帯を表すモデル
  */
 public class TimeRange {
 
