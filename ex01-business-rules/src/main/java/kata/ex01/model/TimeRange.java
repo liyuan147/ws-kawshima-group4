@@ -1,28 +1,30 @@
 package kata.ex01.model;
 
-
 import kata.ex01.util.HolidayUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 /**
- * 期間を表すモデル。
+ * ルールを表すモデル
  */
-public class TimeFrame {
+public class TimeRange {
 
-    private LocalDateTime start;
+    private LocalTime start;
 
-    private LocalDateTime end;
+    private LocalTime end;
 
     private List<LocalDate> dates;
 
-    public TimeFrame(List<LocalDate> dates, LocalDateTime start, LocalDateTime end) {
+    public TimeRange(List<LocalDate> dates, LocalTime start, LocalTime end) {
         this.dates = dates;
         this.start = start;
         this.end = end;
     }
+
+
 
     /**
      * 平日かつルールに適応するかを判定する。
@@ -30,10 +32,10 @@ public class TimeFrame {
      *
      * @return boolean 判定結果
      */
-    public boolean fixAndIsWeekday(Rule rule) {
+    public boolean matchAndIsWeekday(LocalDateTime from, LocalDateTime to) {
 
         for (LocalDate date : dates) {
-            if (!HolidayUtils.isHoliday(date) && overlapWithRuleTime(date, rule)) {
+            if (!HolidayUtils.isHoliday(date) && overlapWithRuleTime(from, to, date)) {
                 return true;
             }
         }
@@ -47,10 +49,10 @@ public class TimeFrame {
      *
      * @return boolean 判定結果
      */
-    public boolean fix(Rule rule) {
+    public boolean match(LocalDateTime from, LocalDateTime to) {
 
         for (LocalDate date : dates) {
-            if (overlapWithRuleTime(date, rule)) {
+            if (overlapWithRuleTime(from, to, date)) {
                 return true;
             }
         }
@@ -58,7 +60,7 @@ public class TimeFrame {
         return false;
     }
 
-    private boolean overlapWithRuleTime(LocalDate date, Rule rule) {
-        return !(start.isAfter(date.atTime(rule.getEnd())) || end.isBefore(date.atTime(rule.getStart())));
+    private boolean overlapWithRuleTime(LocalDateTime from, LocalDateTime to, LocalDate date) {
+        return !(from.isAfter(date.atTime(end)) || to.isBefore(date.atTime(start)));
     }
 }

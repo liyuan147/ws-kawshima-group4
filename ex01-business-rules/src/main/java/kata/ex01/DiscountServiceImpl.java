@@ -18,14 +18,13 @@ public class DiscountServiceImpl implements DiscountService {
         List<LocalDate> drivingDates = new ArrayList<>();
         drivingDates.add(drive.getEnteredAt().toLocalDate());
         drivingDates.add(drive.getExitedAt().toLocalDate());
-        TimeFrame utilizationTime = new TimeFrame(drivingDates, drive.getEnteredAt(), drive.getExitedAt());
 
-        Rule morningRule = new Rule(LocalTime.of(6, 0), LocalTime.of(9, 0));
-        Rule eveningRule = new Rule(LocalTime.of(17, 0), LocalTime.of(20, 0));
-        Rule midNightRule = new Rule(LocalTime.of(0, 0), LocalTime.of(4, 0));
+        TimeRange morningTime = new TimeRange(drivingDates, LocalTime.of(6, 0), LocalTime.of(9, 0));
+        TimeRange eveningTime = new TimeRange(drivingDates, LocalTime.of(17, 0), LocalTime.of(20, 0));
+        TimeRange midnightTime = new TimeRange(drivingDates, LocalTime.of(0, 0), LocalTime.of(4, 0));
 
         // 平日朝夕割引10回以上　地方
-        if ((utilizationTime.fixAndIsWeekday(morningRule) || utilizationTime.fixAndIsWeekday(eveningRule))) {
+        if ((morningTime.matchAndIsWeekday(drive.getEnteredAt(), drive.getExitedAt()) || eveningTime.matchAndIsWeekday(drive.getEnteredAt(), drive.getExitedAt()))) {
             if (drive.getRouteType().equals(RouteType.RURAL)) {
                 if (drive.getDriver().getCountPerMonth() >= 10) {
                     return 50;
@@ -37,7 +36,7 @@ public class DiscountServiceImpl implements DiscountService {
         }
 
         // 深夜割引
-        if (utilizationTime.fix(midNightRule)) {
+        if (midnightTime.match(drive.getEnteredAt(), drive.getExitedAt())) {
             return 30;
         }
 
